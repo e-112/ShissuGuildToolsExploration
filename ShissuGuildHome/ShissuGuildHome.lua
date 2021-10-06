@@ -18,6 +18,8 @@ local setPanel = ShissuFramework["setPanel"]
 local createLabel = ShissuFramework["interface"].createLabel
 local setDefaultColor = ShissuFramework["interface"].setDefaultColor
 local createColorButton = ShissuFramework["interface"].createColorButton
+local currentTime = ShissuFramework["func"].currentTime
+local getKioskTime = ShissuFramework["func"].getKioskTime
                                                                                                                                                                                                                                          
 local correctness = 0
 local frameClose = 0
@@ -255,38 +257,6 @@ function _addon.secsToTime(time, complete)
   return ("%ds"):format(seconds)
 end
 
-function _addon.getKioskTime(which)     
-  local hourSeconds = 60 * 60
-  local daySeconds = 60 * 60 *24
-  local weekSeconds = 7 * daySeconds
-  
-  -- Erste Woche 1970 beginnt Donnerstag -> Verschiebung auf Gebotsende
-  local firstWeek = 1 + (5 * daySeconds) + (13 * hourSeconds)
-
-  local currentTime = _addon.currentTime()                                
-
-  -- Anzahl der Wochen seit 01.01.1970
-  local week = math.floor(currentTime / weekSeconds)
-  local beginnKiosk = firstWeek + (weekSeconds * week) + 60 *60
-  
-  -- Gebots Ende 
-  if (which == 1) then
-    beginnKiosk = beginnKiosk - 300
-  -- Ersatzhändler
-  elseif (which == 2) then
-    beginnKiosk = beginnKiosk + 300                                                     
-  end
-                              
-  -- Restliche Zeit in der Woche
-  local restWeekTime = beginnKiosk - currentTime
-
-  if restWeekTime < 0 then
-    restWeekTime = restWeekTime + weekSeconds
-  end
-
-  return restWeekTime
-end
-
 function _addon.initKioskTimer()
   if _addon.activeControls["kiosk"] == true then return false end
   
@@ -299,7 +269,7 @@ function _addon.initKioskTimer()
   _addon.time:SetHeight(100)
   _addon.time:SetHidden(false)  
   _addon.time:SetHandler("OnMouseEnter", function(self)
-    ZO_Tooltips_ShowTextTooltip(self, TOPRIGHT, white.. _addon.secsToTime(_addon.getKioskTime(), true))
+    ZO_Tooltips_ShowTextTooltip(self, TOPRIGHT, white.. _addon.secsToTime(getKioskTime(), true))
   end)                                                                          
   _addon.time:SetHandler("OnMouseExit", function(self)
     ZO_Tooltips_HideTextTooltip()
@@ -310,7 +280,7 @@ function _addon.initKioskTimer()
   _addon.kioskTimeUpdate(1000) 
 end
 
-function _addon.currentTime()
+function currentTime()
   local correction = GetSecondsSinceMidnight() - (GetTimeStamp() % 86400)
   if correction < -12*60*60 then correction = correction + 86400 end
 
@@ -322,17 +292,17 @@ function _addon.kioskTimeUpdate(time)
   EVENT_MANAGER:UnregisterForUpdate("ShissuGT_KioskTimer")  
   
   EVENT_MANAGER:RegisterForUpdate("ShissuGT_KioskTimer", time, function()
-    local leftTime  = ZO_FormatTimeLargestTwo(_addon.getKioskTime(), TIME_FORMAT_STYLE_DESCRIPTIVE)
+    local leftTime  = ZO_FormatTimeLargestTwo(getKioskTime(), TIME_FORMAT_STYLE_DESCRIPTIVE)
     _addon.time:SetText("|t36:36:EsoUI/Art/Guild/ownership_icon_guildtrader.dds|t" .."\n" .. stdColor .. _L("LEFTTIME") .. "\n" .. white .. leftTime)
 
-    if (frameClose == 0 and _addon.currentTime() > _addon.currentTime() + _addon.getKioskTime() - 900 ) then
+    if (frameClose == 0 and currentTime() > currentTime() + getKioskTime() - 900 ) then
       SGT_KioskTime:SetHidden(false)
     end
 
     if (SGT_KioskTime:IsHidden() == false) then
-      SGT_KioskTime_NextKioskCount:SetText(_addon.secsToTime(_addon.getKioskTime(), true))
-      SGT_KioskTime_LastBidCount:SetText(red .. _addon.secsToTime(_addon.getKioskTime(1), true))
-      SGT_KioskTime_ReplacementBidCount:SetText(blue .. _addon.secsToTime(_addon.getKioskTime(2), true))
+      SGT_KioskTime_NextKioskCount:SetText(_addon.secsToTime(getKioskTime(), true))
+      SGT_KioskTime_LastBidCount:SetText(red .. _addon.secsToTime(getKioskTime(1), true))
+      SGT_KioskTime_ReplacementBidCount:SetText(blue .. _addon.secsToTime(getKioskTime(2), true))
     end
     
      _addon.kioskTimeUpdate(1000) 

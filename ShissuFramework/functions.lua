@@ -105,29 +105,37 @@ end
 
 -- Aktuelle Uhrzeit... Korrektur +
 function _func.currentTime()
-  -- Locale time - UTC time 
-  local correction = GetSecondsSinceMidnight() - (GetTimeStamp() % 86400)
-  if correction < -12*60*60 then correction = correction + 86400 end
+  return GetTimeStamp() + _func.localTimeCorrection()
+end
 
-  return GetTimeStamp() + correction
+function _func.localTimeCorrection()
+    local correction = GetSecondsSinceMidnight() - (GetTimeStamp() % 86400)
+
+    if correction < -12*60*60 then
+        correction = correction + 86400
+    end
+
+    return correction
 end
 
 -- Zeit bis zum nächsten Gildenhändler???
 function _func.getKioskTime(which, additional, day)     
   local hourSeconds = 60 * 60
-  local daySeconds = 60 * 60 *24
+  local daySeconds = 60 * 60 * 24
   local weekSeconds = 7 * daySeconds
   local additional = additional or 0
-  
-  -- Erste Woche 1970 beginnt Donnerstag -> Verschiebung auf Gebotsende
-  local firstWeek = 1 + (5 * daySeconds) + (13 * hourSeconds)
 
-  local currentTime =  _func.currentTime()                               
+  -- Erste Woche 1970 beginnt Donnerstag -> Verschiebung auf Gebotsende
+  -- Trading week begins each Tuesday at 14:00:01 UTC
+  -- The first week began 5 days after the Jan, 1st 1970
+  local firstWeek = (5 * daySeconds) + (14 * hourSeconds) + 1
+
+  local currentTimeUTC = GetTimeStamp()
 
   -- Anzahl der Wochen seit 01.01.1970
-  local week = math.floor(currentTime / weekSeconds) + additional
-  local beginnKiosk = firstWeek + (weekSeconds * week) + 60 * 60
-  
+  local week = math.floor(currentTimeUTC / weekSeconds) + additional
+  local beginnKiosk = firstWeek + (weekSeconds * week)
+
   -- Gebots Ende 
   if (which == 1) then
     beginnKiosk = beginnKiosk - 300
@@ -135,14 +143,14 @@ function _func.getKioskTime(which, additional, day)
   elseif (which == 2) then
     beginnKiosk = beginnKiosk + 300                                                     
   end
-  
+
   -- Restliche Zeit in der Woche
-  local restWeekTime = beginnKiosk - currentTime                            
-  
+  local restWeekTime = beginnKiosk - currentTimeUTC
+
   if (day) then
     restWeekTime = beginnKiosk
   end
-  
+
   if restWeekTime < 0 then
     restWeekTime = restWeekTime + weekSeconds
   end
