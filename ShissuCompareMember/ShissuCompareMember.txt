@@ -4,9 +4,9 @@
 ; States and/or other countries. All rights reserved.
 ; You can read the full terms at https://account.elderscrollsonline.com/add-on-terms
 
-## Title: |cAFD3FFShissu|ceeeeee's CompareMember|r
-## APIVersion: 100033
-## Author: |cAFD3FF@Shissu|r [EU]
+## Title: |c82FA58Shissu|ceeeeee's CompareMember|r v1.1.0
+## APIVersion: 100032 100033
+## Author: |c82FA58@Shissu|r [EU-SERVER]
 ## SavedVariables: shissuCompareMember
 ## DependsOn: ShissuFramework
 

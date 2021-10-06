@@ -1,8 +1,8 @@
 ﻿-- Shissu Guild Tools Addon
 -- ShissuNotebook
 --
--- Version: v2.5.5.2
--- Last Update: 17.12.2020
+-- Version: v2.5.1
+-- Last Update: 24.05.2019
 -- Written by Christian Flory (@Shissu) - esoui@flory.one
 -- Distribution without license is prohibited!
 
@@ -27,17 +27,26 @@ end
 
 local getWindowPosition = ShissuFramework["interface"].getWindowPosition
 local saveWindowPosition = ShissuFramework["interface"].saveWindowPosition
-local createColorButton = ShissuFramework["interface"].coloredButton
+local createColorButton = ShissuFramework["interface"].createColorButton
 local notesDD = nil
 
 local _addon = {}
 _addon.Name	= "ShissuNotebook"
-_addon.Version = "2.5.5.1"
-_addon.lastUpdate = "17.12.2020"
+_addon.Version = "2.5.1"
 _addon.formattedName = stdColor .. "Shissu" .. white .. "'s Notebook"
 _addon.hexColorPicker = nil
 
 local _L = ShissuFramework["func"]._L(_addon.Name)
+
+local _color = { 
+  "|ceeeeee",
+  "|ceeeeee", 
+  "|ceeeeee",
+  "|ceeeeee",
+  "|ceeeeee",
+  ["W"] = "|ceeeeee",
+}
+
 local _ui = {}
 
 local _note = {}
@@ -89,6 +98,10 @@ function _note.createIndexButton(indexPool)
     end
     
     _note.cache.command = _note.command
+    
+    if button == 2 then
+      --SGT.NoteDelete()
+    end
   end)
   
   control:SetHandler("OnMouseEnter", function(self) ZO_Tooltips_ShowTextTooltip(self, TOPRIGHT, white .. self.noteTitle) end)
@@ -256,6 +269,7 @@ function _addon.createBackdropBackground(mainParent, mainParent2, dimensions, te
 	control:SetDimensions(dimensions[1], dimensions[2])  
 	control:SetAnchor(TOPLEFT, mainParent2, TOPLEFT, 0, 0)
 	control:SetDrawLayer(1)
+	--control:SetExcludeFromResizeToFitExtents(true)        
 end
 
 function _addon.close()
@@ -308,7 +322,6 @@ function _addon.notebook()
   _ui.buttonANY = createColorButton("ANY", _ui.buttonW, nil, nil, buttonLabel, editBox)   
 
   SGT_Notebook_NoteText:SetHandler("OnFocusGained", function(self) _note.lastFocus = self end)
-  
   SGT_Notebook_NoteTitleText:SetHandler("OnFocusGained", function(self) _note.lastFocus = self end)
   SGT_Notebook_NoteText:SetHandler("OnTextChanged",_note.onTextChanged)
   SGT_Notebook_New:SetHandler("OnClicked", _note.new)

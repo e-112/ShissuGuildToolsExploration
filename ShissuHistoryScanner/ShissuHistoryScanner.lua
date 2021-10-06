@@ -1,10 +1,12 @@
 ﻿-- Shissu Guild Tools Addon
 -- ShissuHistoryScanner
 --
--- Version: v1.4.0.4
--- Last Update: 25.11.2020
+-- Version: v1.4.0
+-- Last Update: 24.05.2019
 -- Written by Christian Flory (@Shissu) - esoui@flory.one
 -- Distribution without license is prohibited!
+
+--ERSTE VORBEREITUNGEN FÜR GEMEINSAME LIB
 
 local _globals = ShissuFramework["globals"]
 local stdColor = _globals["stdColor"]
@@ -150,8 +152,9 @@ function _addon.processEvents(guildId, category)
   --d("LETZTER: " .. GetDateStringFromTimestamp(lastNPCSave) .. " - " .. ZO_FormatTime((lastNPCSave) % 86400, TIME_FORMAT_STYLE_CLOCK_TIME, TIME_FORMAT_PRECISION_TWENTY_FOUR_HOUR)) 
   --d("VORLETZTER: " .. GetDateStringFromTimestamp(previousKiosk) .. " - " .. ZO_FormatTime((previousKiosk) % 86400, TIME_FORMAT_STYLE_CLOCK_TIME, TIME_FORMAT_PRECISION_TWENTY_FOUR_HOUR))     
 
-  -- Wenn der letzte neu berechnete NPC eine Abweichung zum gespeicherten letzten hat,
-  -- dann die aktuelle Woche "reseten" und die Informationen nach hinten verlagern.
+  --If the last recalculated NPC differs from the last one saved,
+  -- then "reset" the current week and move the information back.
+
   if (shissuHistoryScanner["lastNPC"] ~= nil) then
     if (lastNPC > shissuHistoryScanner["lastNPC"] ) then
       shissuHistoryScanner["lastNPC"] = lastKiosk

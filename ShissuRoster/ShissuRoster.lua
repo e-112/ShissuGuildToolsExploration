@@ -1,7 +1,7 @@
 ﻿-- Shissu Guild Tools Addon
 -- ShissuRoster
 --
--- Version: v2.3.2
+-- Version: v2.2.3
 -- Written by Christian Flory (@Shissu) - esoui@flory.one
 -- Distribution without license is prohibited!
 
@@ -24,15 +24,11 @@ local zos = {
 local setPanel = ShissuFramework["setPanel"]
 local createZOButton = ShissuFramework["interface"].createZOButton
 local checkBoxLabel = ShissuFramework["interface"].checkBoxLabel
-local round = ShissuFramework["functions"]["datatypes"].round
-local RGBtoHex = ShissuFramework["functions"]["datatypes"].RGBtoHex
+local round = ShissuFramework["func"].round
 
-local createColorButton = ShissuFramework["interface"].coloredButton
-
-local _addon = {}                                        
+local _addon = {}                                                 
 _addon.Name	= "ShissuRoster"
-_addon.Version = "2.3.2"
-_addon.lastUpdate = "18.12.2020"
+_addon.Version = "2.2.3"
 _addon.formattedName	= stdColor .. "Shissu" .. white .. "'s Roster"
 
 _addon.buttons = {}
@@ -46,7 +42,7 @@ _addon.userColorW = white
 
 local _L = ShissuFramework["func"]._L(_addon.Name)
 
-_addon.panel = setPanel(_L("TITLE"), _addon.formattedName, _addon.Version, _addon.lastUpdate)
+_addon.panel = setPanel(_L("TITLE"), _addon.formattedName, _addon.Version)
 _addon.controls = {}
 
 local _roster = {}
@@ -82,7 +78,12 @@ function _addon.createSettingMenu()
     type = "title",
     name = _L("COLADD"),
   }
-                               
+  
+  controls[#controls+1] = {
+    type = "description",
+    name = _L("COLADD2") .. stdColor .. "\n\reloadui",
+  }  
+                                          
   controls[#controls+1] = {
     type = "checkbox",
     name = _L("COLCHAR"),
@@ -191,7 +192,7 @@ function _addon.goldFilter()
           direct = "<"
         end
 
-        SGT_Roster_GoldDeposit:SetText(white .. _L("TOTAL") .. " " .. direct .. stdColor .. " " .. gold)
+        SGT_Roster_GoldDeposit:SetText(white .. "Total Gold Paid " .. direct .. stdColor .. " " .. gold)
         _filter.gold = gold
         _roster.refreshFilters()
       end
@@ -442,7 +443,7 @@ function _roster.getTotalGold()
 
   local numMember = GetNumGuildMembers(guildId)
   local goldDeposit = 0
-  
+    
   for memberId = 1, numMember, 1 do
     local memberData = { GetGuildMemberInfo(guildId, memberId) }
     local displayName = memberData[1]            
@@ -504,23 +505,57 @@ function _addon.newCharName(charName, charInfo)
   charName = _addon.getCharInfoIcon(charInfo.alliance, charName)
  
   return charName 
-end      
+end
+
+function _addon.createZOButton(name, text, width, offsetX, offsetY, anchor, control)
+  local button = CreateControlFromVirtual(name, anchor, "ZO_DefaultTextButton")
+  local editbox = ZO_EditNoteDialogNoteEdit
+  local buttonlabel = "SGT_GuildColor_Note"
+
+  button:SetText(text)
+  button:SetAnchor(TOPLEFT, anchor, TOPLEFT, offsetX, offsetY)
+  button:SetWidth(width)
+  
+  button:SetHandler("OnMouseExit", function() ZO_Tooltips_HideTextTooltip() end)
+  button:SetHandler("OnMouseEnter", function() 
+    local colorString =  string.gsub(button:GetName(), buttonlabel, "") 
+    
+    if not colorString == "ANY" then
+      ZO_Tooltips_ShowTextTooltip(button, TOPRIGHT,  _addon["userColor" .. colorString] .. _L("YOURTEXT") .. "|r")
+    end
+  end)
+  
+  local htmlString
+  
+  local function ColorPickerCallback(r, g, b, a)
+    htmlString = RGBtoHex(r,g,b)                         
+  end    
+  
+  local ZOS_BUTTON = ESO_Dialogs.COLOR_PICKER["buttons"][1].callback
+    
+  button:SetHandler("OnClicked", function()        
+    local colorString =  string.gsub(button:GetName(), buttonlabel, "") 
+    local cache = editbox:GetText()
+  
+    editbox:SetText(cache .. _addon["userColor" .. colorString] .. _L("YOURTEXT") .. "|r") 
+  end)
+  
+  return button
+end                 
 
 local function deepcopy(orig)
-  local orig_type = type(orig)
-  local copy
-  if orig_type == 'table' then
-    copy = {}
-    
-    for orig_key, orig_value in next, orig, nil do
-      copy[deepcopy(orig_key)] = deepcopy(orig_value)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[deepcopy(orig_key)] = deepcopy(orig_value)
+        end
+        setmetatable(copy, deepcopy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
     end
-    setmetatable(copy, deepcopy(getmetatable(orig)))
-  else -- number, string, boolean, etc
-    copy = orig
-  end
-
-  return copy
+    return copy
 end
 
 function _addon.rosterUI()
@@ -551,38 +586,38 @@ function _addon.rosterUI()
   GUILD_ROSTER_KEYBOARD.FilterScrollList = _roster.filterScrollList
 
   -- Allianzen
-  _roster.AllianceLabel = createZOButton("SGT_Roster_AllianceLabel", stdColor .. _L("ALLIANCE"), 150, 180, 10 , ZO_GuildRosterSearchLabel)
-  _roster.Aldmeri = _addon.createButton("SGT_Roster_Aldmeri","Aldmeri", 50, 30, SGT_Roster_AllianceLabel)
-  _roster.AldmeriInGuild = createZOButton("SGT_Roster_AldmeriInGuild", "", 50, 35, -3, SGT_Roster_Aldmeri)
-
+  _roster.AllianceLabel = createZOButton("SGT_Roster_AllianceLabel", stdColor .. _L("ALLIANCE"), 150, 180, -2 , ZO_GuildRosterSearchLabel)                                                                          
+  _roster.Aldmeri = _addon.createButton("SGT_Roster_Aldmeri","Aldmeri", 50, 30, SGT_Roster_AllianceLabel)  
+  _roster.AldmeriInGuild = createZOButton("SGT_Roster_AldmeriInGuild", "", 50, 35, -5, SGT_Roster_Aldmeri)  
+  
   _roster.Ebonheart = _addon.createButton("SGT_Roster_Ebonheart","Ebonheart", 90, 0, SGT_Roster_Aldmeri)
-  _roster.EbonheartInGuild = createZOButton("SGT_Roster_EbonheartInGuild", "", 50, 35, -3, SGT_Roster_Ebonheart)
-  _roster.Daggerfall = _addon.createButton("SGT_Roster_Daggerfall","Daggerfall", 90, 0, SGT_Roster_Ebonheart)
-  _roster.DaggerfallInGuild = createZOButton("SGT_Roster_DaggerfallInGuild", "", 50, 35, -3, SGT_Roster_Daggerfall)
+  _roster.EbonheartInGuild = createZOButton("SGT_Roster_EbonheartInGuild", "", 50, 35, -5, SGT_Roster_Ebonheart)
+  _roster.Daggerfall = _addon.createButton("SGT_Roster_Daggerfall","Daggerfall", 90, 0, SGT_Roster_Ebonheart)  
+  _roster.DaggerfallInGuild = createZOButton("SGT_Roster_DaggerfallInGuild", "", 50, 35, -5, SGT_Roster_Daggerfall)
 
-  -- Info Status Label
-  _roster.StatusLabel = createZOButton("SGT_Roster_StatusLabel","", 50, -380 , 60, ZO_GuildRosterSearchLabel)
-  _roster.Online = _addon.createButton("SGT_Roster_Online","Online", 380, 5, SGT_Roster_StatusLabel)
-  _roster.Offline = _addon.createButton("SGT_Roster_Offline","Offline", 50, 0, SGT_Roster_Online)
-
+  -- Info Status Label  
+  _roster.StatusLabel = createZOButton("SGT_Roster_StatusLabel","Status:", 100, -380 , 50, ZO_GuildRosterSearchLabel)
+  _roster.Online = _addon.createButton("SGT_Roster_Online","Online", 100, 5, SGT_Roster_StatusLabel)                        
+  _roster.Offline = _addon.createButton("SGT_Roster_Offline","Offline", 50, 0, SGT_Roster_Online) 
+  
   -- Button Offline seit...
   _roster.OfflineSince = createZOButton("SGT_Roster_OfflineSince", stdColor .. _L("OFFLINE") .. ": ".. white .. "0 " .. _L("DAYS"), 200, 20, -5, SGT_Roster_Offline)
-  _roster.OfflineSince:SetHandler("OnMouseUp", function(self, button)
-  _addon.offlineFilter()
+  _roster.OfflineSince:SetHandler("OnMouseUp", function(self, button) 
+    _addon.offlineFilter()
   end)
 
-  _roster.Choice = createZOButton("SGT_Roster_Choice","", 200, 290, 60, ZO_GuildRosterSearchLabel)
-
+  _roster.Choice = createZOButton("SGT_Roster_Choice","", 200, 290, 50, ZO_GuildRosterSearchLabel)
+  
   -- Rang
-  _roster.RankLabel = _addon.createLabel("SGT_Roster_RankLabel", ZO_GuildRoster, _L("RANK") .. ":", {50,30}, {10, 20}, false, BOTTOMLEFT)
+  _roster.RankLabel = _addon.createLabel("SGT_Roster_RankLabel", ZO_GuildRoster, _L("RANK") .. ":", {50,30},  {50, -5}, false, BOTTOMLEFT)
   _roster.Rank = WINDOW_MANAGER:CreateControlFromVirtual("SGT_Roster_Rank", SGT_Roster_RankLabel, "ZO_ComboBox")
   _roster.Rank:SetAnchor(RIGHT, SGT_Roster_RankLabel, RIGHT, 150, -5)
   _roster.Rank:SetHidden(false)
-  _roster.Rank:SetWidth(140)
+  _roster.Rank:SetWidth(140) 
   _roster.Rank.dropdown = ZO_ComboBox_ObjectFromContainer(_roster.Rank)
 
   _roster.rank = _roster.Rank.dropdown
-  _roster.rank:SetSortsItems(false)
+  _roster.rank:SetSortsItems(false) 
   _roster.setRank(_roster.rank)
 
   _roster.rank:SetSelectedItem(stdColor .. "-- " .. white .. _L("ALL"))
@@ -591,12 +626,12 @@ function _addon.rosterUI()
   ZO_GuildRosterHideOffline:SetHidden(true)
 
   -- Einzahlungen
-  _roster.goldLabel = _addon.createLabel("SGT_Roster_GoldLabel", SGT_Roster_RankLabel, _L("DEPOSIT2") .. ":", {110, 30}, {450, -18}, false, BOTTOMLEFT)
+  _roster.goldLabel = _addon.createLabel("SGT_Roster_GoldLabel", SGT_Roster_RankLabel, _L("DEPOSIT2") .. ":", {110, 30},  {-67, 15}, false, BOTTOMLEFT)
 
   _roster.Gold = WINDOW_MANAGER:CreateControlFromVirtual("SGT_Roster_Gold", SGT_Roster_GoldLabel, "ZO_ComboBox")
-  _roster.Gold:SetAnchor(RIGHT, SGT_Roster_GoldLabel, RIGHT, 150, -5)
+  _roster.Gold:SetAnchor(RIGHT, SGT_Roster_GoldLabel, RIGHT, 158, 0)
   _roster.Gold:SetHidden(false)
-  _roster.Gold:SetWidth(140)
+  _roster.Gold:SetWidth(140)  
   _roster.Gold.dropdown = ZO_ComboBox_ObjectFromContainer(_roster.Gold)
   
   _roster.gold = _roster.Gold.dropdown
@@ -638,18 +673,14 @@ function _addon.rosterUI()
   _roster.GoldDeposit:SetWidth(200)
   _roster.GoldDeposit:SetText(white .. _L("SUM") .. ": " .. stdColor .. _roster.getTotalGold())
 
-  -- Farbbuttons in den Notizen
+  local CL = _addon.createZOButton
   ZO_EditNoteDialogNote:SetAnchor (3, ZO_EditNoteDialogDisplayName, 3, 0, 60)
-  local editbox = ZO_EditNoteDialogNoteEdit
-  local descWidth = editbox:GetWidth() - (editbox:GetWidth() * 0.25)
-  local buttonLabel = "ShissuRosterNoteColor"
-
-  _addon.buttons.note1 = createColorButton("1", editbox, "1", {-descWidth, -33}, buttonLabel, editbox)  
-  _addon.buttons.note2 = createColorButton("2", _addon.buttons.note1, "2", nil, buttonLabel, editbox)  
-  _addon.buttons.note3 = createColorButton("3", _addon.buttons.note2, "3", nil, buttonLabel, editbox)  
-  _addon.buttons.note4 = createColorButton("4", _addon.buttons.note3, "4", nil, buttonLabel, editbox)  
-  _addon.buttons.note5 = createColorButton("5", _addon.buttons.note4, "5", nil, buttonLabel, editbox)  
-  _addon.buttons.noteW = createColorButton("W", _addon.buttons.note5, nil, nil, buttonLabel, editbox)  
+  _addon.buttons.NoteStandard1 = CL("SGT_GuildColor_Note1", white .. "[ " .. _addon.userColor1 .. "1" .. white .. " ]", 50, 60, 30, ZO_EditNoteDialogDisplayName, 1)
+  _addon.buttons.NoteStandard2 = CL("SGT_GuildColor_Note2", white .. "[ " .. _addon.userColor2 .. "2" .. white .. " ]", 50, 40, 0, SGT_GuildColor_Note1, 1)
+  _addon.buttons.NoteStandard3 = CL("SGT_GuildColor_Note3", white .. "[ " .. _addon.userColor3 .. "3" .. white .. " ]", 50, 40, 0, SGT_GuildColor_Note2, 1)
+  _addon.buttons.NoteStandard4 = CL("SGT_GuildColor_Note4", white .. "[ " .. _addon.userColor4 .. "4" .. white .. " ]", 50, 40, 0, SGT_GuildColor_Note3, 1)
+  _addon.buttons.NoteStandard5 = CL("SGT_GuildColor_Note5", white .. "[ " .. _addon.userColor5 .. "5" .. white .. " ]", 50, 40, 0, SGT_GuildColor_Note4, 1) 
+  _addon.buttons.NoteStandardW = CL("SGT_GuildColor_NoteW", white .. "[ " .. white .. "W" .. white .. " ]", 50, 40, 0, SGT_GuildColor_Note5, 1) 
 end
             
 function _roster.refreshFilters()
@@ -657,7 +688,7 @@ function _roster.refreshFilters()
 end
 
 function ZO_KeyboardGuildRosterRowDisplayName_OnMouseEnter(control)
-  org_ZO_KeyboardGuildRosterRowDisplayName_OnMouseEnter(control) 
+  org_ZO_KeyboardGuildRosterRowDisplayName_OnMouseEnter(control)
 
   local parent = control:GetParent()
   local data = ZO_ScrollList_GetData(parent)
@@ -723,6 +754,9 @@ function _addon:InitRosterChanges()
     _addon.standardZO()
   end
 
+  --_addon.originalRosterBuildMasterList = GUILD_ROSTER_MANAGER.BuildMasterList
+  --GUILD_ROSTER_MANAGER.BuildMasterList = SGT_GuildRosterManager.BuildMasterList
+  
   local headers = ZO_GuildRosterHeaders
   local zoneHeader = headers:GetNamedChild('Zone')
   
@@ -881,7 +915,7 @@ function GUILD_ROSTER_MANAGER:SetupEntry(control, data, selected)
     if(not persNote) then
       controlName = control:GetName() .. '[N]'
     	persNote = control:CreateControl(controlName, CT_LABEL)
-    	persNote:SetAnchor(LEFT, rowNote, LEFT, -20, 0)
+    	persNote:SetAnchor(LEFT, rowNote, LEFT, -15, 0)
       persNote:SetFont('ZoFontGame')
       persNote:SetWidth(40)
       persNote:SetHorizontalAlignment(TEXT_ALIGN_LEFT)    
@@ -890,7 +924,7 @@ function GUILD_ROSTER_MANAGER:SetupEntry(control, data, selected)
     if data.sgtNote then 
       persNote:SetMouseEnabled(true);
       persNote:SetHandler("OnMouseEnter", function (self) ZO_Tooltips_ShowTextTooltip(self, TOP, data.sgtNote) end)
-      persNote:SetHandler("OnMouseExit", function (self) ZO_Tooltips_HideTextTooltip() end)
+      persNote:SetHandler("OnMouseExit", function (self) ZO_Tooltips_HideTextTooltip() end) --org_ZO_KeyboardGuildRosterRowDisplayName_OnMouseExit(self) end) 
       persNote:SetText("|t32:32:/ShissuFramework/textures/notes.dds|t")
       persNote:SetHidden(false)   
     else
@@ -1052,13 +1086,36 @@ function SGT_GuildRosterManager:BuildMasterList()
   end 
 end
 
-function _addon.perfectPixelWorkaround()
+local function RGBtoHex(r,g,b)
+  local rgb = {r*255, g*255, b*255}
+  local hexstring = ""
 
+  for key, value in pairs(rgb) do
+    local hex = ""
+
+    while (value > 0)do
+      local index = math.fmod(value, 16) + 1
+      value = math.floor(value / 16)
+      hex = string.sub("0123456789ABCDEF", index, index) .. hex     
+    end
+
+    if(string.len(hex) == 0) then
+      hex = "00"
+    elseif(string.len(hex) == 1) then
+      hex = "0" .. hex
+    end
+
+    hexstring = hexstring .. hex
+  end
+
+  return hexstring
 end
 
 
 -- * Initialisierung
 function _addon.initialized()
+  --d(_addon.formattedName .. " " .. _addon.Version)
+  
   if (shissuColor ~= nil) then
     for i = 1, 5 do
       if (shissuColor["c" .. i] ~= nil) then
@@ -1068,7 +1125,7 @@ function _addon.initialized()
     
     for number=1, 5 do
       if (shissuColor["c" .. number] ~= nil ) then
-        _addon["userColor" .. number] = RGBtoHex({shissuColor["c" .. number][1], shissuColor["c" .. number][2], shissuColor["c" .. number][3]})
+        _addon["userColor" .. number] = "|c" .. RGBtoHex(shissuColor["c" .. number][1], shissuColor["c" .. number][2], shissuColor["c" .. number][3])
       --d(_addon["userColor" .. number])
       end
     end
@@ -1081,38 +1138,28 @@ function _addon.initialized()
   _addon.rosterUI()
   _addon:InitRosterChanges() 
   _addon.createSettingMenu()
-
-  if (PerfectPixel == nil) then
-    local control = GetControl("ZO_GuildRoster")
-    local backdrop = CreateControl("SGT_SharedRightBackgroundLeft", control, CT_BACKDROP)
-    local backdrop_height = ZO_GuildRoster:GetHeight()
-    local backdrop_width = ZO_GuildRoster:GetWidth() * 2
-
-    backdrop:SetDimensions(backdrop_width, backdrop_height)  
-    backdrop:SetAnchor(TOPLEFT, control, TOPLEFT, -26, 59)
-    backdrop:SetCenterColor( 0, 0, 0, 0.66 )
-    backdrop:SetEdgeColor( 0, 0, 0, 0.4 )
-    backdrop:SetEdgeTexture("",1 ,1 ,2 )
-    backdrop:SetPixelRoundingEnabled(true) 
-    backdrop:SetExcludeFromResizeToFitExtents(true)
-
-    backdrop:SetHidden(false)
-  end
-
-  if (GUILD_ROSTER_KEYBOARD) then
-    local searchBox = GUILD_ROSTER_KEYBOARD["searchBox"]
-
-    searchBox.defaultTextEnabled = false
-    ZO_EditDefaultText_OnTextChanged(searchBox)
-  end
-
 end                               
 
 function _addon.EVENT_ADD_ON_LOADED(_, addOnName)
   if addOnName ~= _addon.Name then return end
 
   shissuRoster = shissuRoster or _addon.settings
-  shissuRoster = shissuRoster or {2}
+  
+  -- KOPIE / Leeren alter SGT Var
+  shissuRoster = shissuRoster or {}
+  --if ( shissuGT ~= nil ) then
+  --  if ( shissuGT["ShissuRoster"] ~= nil ) then
+  --    shissuRoster = deepcopy(shissuGT["ShissuRoster"])
+   --   shissuGT["ShissuRoster"] = nil
+   -- end
+  --end
+  
+  --if shissuRoster == {} then
+  --  shissuRoster = _addon.settings 
+ -- end 
+  
+  --_addon.settings = shissuRoster
+  -- KOPIE / Leeren alter SGT Var  
 
   zo_callLater(function()               
     ShissuFramework._settings[_addon.Name] = {}

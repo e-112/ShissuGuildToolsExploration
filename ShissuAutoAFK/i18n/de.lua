@@ -5,12 +5,7 @@ ShissuLocalization["ShissuAutoAFK"] = {
   AUTOAFK =         "Automatisches AFK",
   REMINDER =        "Erinnerung",
   INFOFFLINE =      "Du bist aktuell für andere Spieler noch Offline!", 
-  AUTOONLINE =      "Automatisches Umschalten von Offline zu Online!",
+  AUTOONLINE =      "Automatischen Umschalten von Offline zu Online!",
   REMINDEROFFLINE = "Erinnerung: Offline?",
-  MINUTE =          "nach X Minuten",         
-  
-  ON =              "aktiviert",
-  OFF =             "deaktiviert",
+  MINUTE =          "nach X Minuten",                   
 }
-
-ZO_CreateStringId("SI_BINDING_NAME_SAAFK_autoOnline", "Automatisches Offline -> Online")

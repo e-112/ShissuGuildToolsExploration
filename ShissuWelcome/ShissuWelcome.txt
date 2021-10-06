@@ -6,9 +6,9 @@
 
 ; Author: @Shissu on EU-Server!
  
-## Title: |cAFD3FFShissu|ceeeeee's Welcome|r
-## APIVersion: 100033
-## Author: |cAFD3FF@Shissu|r [EU]
+## Title: |c82FA58Shissu|ceeeeee's Welcome|r v1.2.0
+## APIVersion: 100032 100033
+## Author: |c82FA58@Shissu|r [EU-SERVER]
 ## Description: None
 ## SavedVariables: shissuWelcome
 ## DependsOn: ShissuFramework

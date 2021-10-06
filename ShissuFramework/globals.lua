@@ -2,16 +2,14 @@
 local _globals = {}
 
 -- Farben
-_globals.stdColor = "|cAFD3FF"
+_globals.stdColor = "|c82FA58"
 _globals.white = "|ceeeeee"
 _globals.blue = "|cAFD3FF"
 _globals.red = "|cff7d77"
-_globals.green = "|c77ff7a"   -- 119 255 112
+_globals.green = "|c77ff7a"
 _globals.yellow = "|cf1ff77"
 _globals.gray = "|cd5d1d1"
 _globals.orange = "|cF5DA81"
-
-_globals.RGBstdColor = { 111/255, 168/255, 238/255, 1 }
 
 -- Texturen
 _globals.goldSymbol = "|t16:16:/esoui/art/guild/guild_tradinghouseaccess.dds|t"
@@ -20,7 +18,7 @@ _globals.goldSymbol = "|t16:16:/esoui/art/guild/guild_tradinghouseaccess.dds|t"
 _globals["ZOS"] = {
   ["History"] = GUILD_HISTORY_GENERAL,
   ["Joined"] = GUILD_EVENT_GUILD_JOIN,
-  ["Bank"] = GUILD_HISTORY_BANK,  
+  ["Bank"] = GUILD_HISTORY_BANK,
   ["GoldAdded"] = GUILD_EVENT_BANKGOLD_ADDED,
   ["GoldRemoved"] = GUILD_EVENT_BANKGOLD_REMOVED,
   ["ItemAdded"] = GUILD_EVENT_BANKITEM_ADDED,

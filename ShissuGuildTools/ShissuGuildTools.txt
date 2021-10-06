@@ -1,4 +1,4 @@
-; This Add-on is not created by, affiliated with or sponsored by ZeniMax
+﻿; This Add-on is not created by, affiliated with or sponsored by ZeniMax
 ; Media Inc. or its affiliates. The Elder Scrolls� and related logos are
 ; registered trademarks or trademarks of ZeniMax Media Inc. in the United
 ; States and/or other countries. All rights reserved.
@@ -6,9 +6,10 @@
 
 ; Author: @Shissu on EU-Server!
  
-## Title: |cAFD3FFShissu|ceeeeee's Guild Tools
-## APIVersion: 100033
-## Author: |cAFD3FF@Shissu|r [EU]
+## Title: |c82FA58Shissu|ceeeeee's Guild Tools|r v3.5.2
+## APIVersion: 100032 100033
+## Author: |c82FA58@Shissu|r [EU-SERVER]
+## SavedVariables: shissuGT
 ## DependsOn: ShissuFramework
 
 ShissuGuildTools.lua

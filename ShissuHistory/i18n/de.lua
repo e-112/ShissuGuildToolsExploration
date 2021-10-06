@@ -14,6 +14,7 @@ ShissuLocalization["ShissuHistory"] = {
   SALES         = "Verkäufe",
   EXTERN  	    = "Extern",
   TRADER        = "seit Gildenhändler",
+  PAGES         = "alle Seiten öffnen",
   PLAYER        = GetString(SI_PLAYER_MENU_PLAYER),
   SET1          = "Bank: Ein- und Auszahlungen (Gold + Items)",
   SET2          = "Verkäufe: Umsatz, Nicht-Gildenmitglieder (Extern), 3,5%-Beteiligung",

@@ -1,4 +1,3 @@
--- Automatische Generierung
 ShissuLocalization = ShissuLocalization or {}
 
 ShissuLocalization["ShissuColor"] = {

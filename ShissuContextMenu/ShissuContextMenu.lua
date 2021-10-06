@@ -1,8 +1,8 @@
 ﻿-- Shissu Guild Tools Addon
 -- ShissuContextMenu
 --
--- Version: v1.3.0.5
--- Last Update: 28.11.2020
+-- Version: v1.2.2
+-- Last Update: 24.05.2019
 -- Written by Christian Flory (@Shissu) - esoui@flory.one
 -- Distribution without license is prohibited!
  
@@ -13,15 +13,13 @@ local ZOS_GUILD_ROSTER_KEYBOARD = GUILD_ROSTER_KEYBOARD.GuildRosterRow_OnMouseUp
 local _globals = ShissuFramework["globals"]
 local stdColor = _globals["stdColor"]
 local white = _globals["white"]
-local red = _globals["red"]
 
-local splitToArray = ShissuFramework["functions"]["datatypes"].splitToArray
+local splitToArray = ShissuFramework["func"].splitToArray
 local setPanel = ShissuFramework["setPanel"]
 
 local _addon = {}
 _addon.Name	= "ShissuContextMenu"
-_addon.Version = "1.3.0.5"
-_addon.lastUpdate = "28.11.2020"
+_addon.Version = "1.2.1"
 _addon.formattedName = stdColor .. "Shissu" .. white .. "'s Contextmenu"
 
 local _L = ShissuFramework["func"]._L(_addon.Name)
@@ -36,7 +34,7 @@ _addon.settings = {
 
 local _personalNote = {}
                                                                                                       
-_addon.panel = setPanel(_L("TITLE"), _addon.formattedName, _addon.Version, _addon.lastUpdate)
+_addon.panel = setPanel(_L("TITLE"), _addon.formattedName, _addon.Version)
 _addon.controls = {}
 
 function _addon.guildInvite(displayName)     
@@ -49,7 +47,6 @@ function _addon.guildInvite(displayName)
       AddMenuItem(string.gsub(_L("INVITEC"), "%%1", GuildName), function() 
         GuildInvite(guildId, displayName) 
 
-        -- Wenn das AddOn ShissuWelcome genutzt wird...
         if (shissuWelcome ~= nil) then
           if (shissuWelcome["invite"] ~= nil) then
             local allowInvite = shissuWelcome["invite"][GuildName]
@@ -78,19 +75,6 @@ function _addon.guildInvite(displayName)
   end
 end
 
-function _addon.setToBlacklist(displayName)
-  for gId = 1, GetNumGuilds() do
-    local guildId = GetGuildId(gId)
-    local guildName = GetGuildName(guildId)
-
-    if DoesPlayerHaveGuildPermission(guildId, GUILD_PERMISSION_MANAGE_BLACKLIST) then
-      AddMenuItem(white .. ShissuFramework["functions"]["chat"].replacePlaceholder(_L("BLACKLIST"), {red, white, stdColor .. guildName}), function() 
-        AddToGuildBlacklistByDisplayName(guildId, displayName, "")
-      end)
-    end
-  end
-end
-
 function _addon.contextHead(previous)
   if (not previous) then previous = 1 end
   local func = function() end
@@ -114,7 +98,6 @@ function _addon.chat()
     end
     
     if shissuContextMenu["chatInvite"] then _addon.guildInvite(displayName) end  
-    _addon.setToBlacklist(displayName)
     
     if ZO_Menu_GetNumMenuItems() > 0 then ShowMenu() end
   end
@@ -175,14 +158,10 @@ function _addon.GuildRosterRow_OnMouseUp(self, control, button, upInside)
       end
     elseif shissuContextMenu["guild"] then
       _addon.contextHead(1, self:ShowMenu(control))
-
-      
     end
 
     if shissuContextMenu["guild"] then
       _addon.guildInvite(data.displayName) 
-
-      _addon.setToBlacklist(data.displayName)
     end
     
     -- Persönliche Notizen
@@ -193,22 +172,6 @@ function _addon.GuildRosterRow_OnMouseUp(self, control, button, upInside)
 end
 
 -- Persönliche Notizen
-function _addon.checkGuildRosterVars(guildId, displayName)
-  if shissuRoster["PersonalNote"] == nil then
-    shissuRoster["PersonalNote"] = {}
-  end
-
-  if shissuRoster["PersonalNote"][guildId] == nil then 
-    shissuRoster["PersonalNote"][guildId] = {}
-  end
-
-  if (displayName ~= nil) then
-    if shissuRoster["PersonalNote"][guildId][displayName] ~= nil then 
-      shissuRoster["PersonalNote"][guildId][displayName] = {} 
-    end
-  end
-end
-
 function _addon.persNote(data)
   if (shissuRoster) then
       if (shissuRoster["colNote"]) then
@@ -217,8 +180,10 @@ function _addon.persNote(data)
             local guildId = GUILD_ROSTER_MANAGER:GetGuildId()
             local notes = ""
             local displayName = data.displayName
-            
-            _addon.checkGuildRosterVars(guildId)
+
+            if shissuRoster["PersonalNote"][guildId] == nil then 
+              shissuRoster["PersonalNote"][guildId] = {}
+            end
                           
             if shissuRoster["PersonalNote"][guildId][displayName] == nil then 
               notes = ""
@@ -240,15 +205,17 @@ function _addon.personalNoteChange(displayName, note)
   if displayName == nil then return false end
   
   -- Variablen erstellen, falls nicht vorhanden, und danach abspeichern
-  _addon.checkGuildRosterVars(guildId, displayName)
+  if shissuRoster["PersonalNote"][guildId] == nil then shissuRoster["PersonalNote"][guildId] = {} end
+  if shissuRoster["PersonalNote"][guildId][displayName] ~= nil then shissuRoster["PersonalNote"][guildId][displayName] = {} end
 
   if string.len(note) == 1 and note ~= " " then 
     note = " " .. note
   end
   
   shissuRoster["PersonalNote"][guildId][displayName] = note
-  --d(note)
-
+  shissuRoster["PersonalNote"][guildId][displayName] = note
+  shissuRoster["PersonalNote"][guildId][displayName] = note
+    
   GUILD_ROSTER_MANAGER:RefreshData()     
 end
     
@@ -337,8 +304,17 @@ function _addon.createGuildVars(saveVar, value)
 end 
 
 function _addon.initialized()
+  --d(_addon.formattedName .. " " .. _addon.Version)
+
   shissuContextMenu = shissuContextMenu or {}
-  if shissuContextMenu["guild"] == nil then shissuContextMenu = _addon.settings end 
+
+  if shissuContextMenu["guild"] == nil then
+    shissuContextMenu["guild"] = true
+    shissuContextMenu["chatNewMail"] = true
+    shissuContextMenu["chatInvite"] = true
+    shissuContextMenu["mailAnswer"] = true
+    shissuContextMenu["mailInvite"] = true
+  end 
 
   _addon.createSettingMenu()
 

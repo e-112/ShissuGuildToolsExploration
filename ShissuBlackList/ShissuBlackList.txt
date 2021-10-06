@@ -6,10 +6,17 @@
 
 ; Author: @Shissu on EU-Server!
  
-## Title: |cAFD3FFShissu|ceeeeee's Blacklist [outdated, now Player observation]|r
-## APIVersion: 100033
-## Author: |cAFD3FF@Shissu|r [EU]
-## SavedVariables: shissuBlacklist
+## Title: |c82FA58Shissu|ceeeeee's BlackList|r v1.4.0
+## APIVersion: 100032 100033
+## Author: |c82FA58@Shissu|r [EU-SERVER]
+## Description: None
+## SavedVariables: shissuBlackList
+## DependsOn: ShissuFramework
+
+# Libs, Language, Depends
+i18n\EN.lua
+i18n\$(language).lua
 
 #Main
+ShissuBlackList.xml
 ShissuBlackList.lua

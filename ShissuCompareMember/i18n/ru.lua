@@ -1,4 +1,3 @@
--- Automatisierte Übersetzung
 ShissuLocalization = ShissuLocalization or {}
 
 ShissuLocalization["ShissuCompareMember"] = {  

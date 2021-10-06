@@ -1,17 +1,7 @@
--- Shissu Guild Tools Addon
--- ShissuGuildHome
---
--- Version: v1.2.0.8
--- Last Update: 17.11.2020
--- Written by Christian Flory (@Shissu) - esoui@flory.one
--- Distribution without license is prohibited!
-
 _SGTguildMemberList = {}
 
 local _addon = {}
 _addon.Name = "ShissuProvisionMember"
-_addon.Version = "1.2.0.8"
-_addon.lastUpdate = "17/11/2020"
 
 function _addon.createGuildVars(name, memberId, guildId) 
   if _SGTguildMemberList[name] == nil then

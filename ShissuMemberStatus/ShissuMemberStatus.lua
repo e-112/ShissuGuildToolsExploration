@@ -1,8 +1,8 @@
 -- Shissu Guild Tools Addon
 -- ShissuMemberStatus
 --
--- Version: v1.3.2.8
--- Last Update: 06.12.2020
+-- Version: v1.3.1
+-- Last Update: 24.05.2019
 -- Written by Christian Flory (@Shissu) - esoui@flory.one
 -- Distribution without license is prohibited!
  
@@ -20,51 +20,34 @@ local setPanel = ShissuFramework["setPanel"]
 
 local _addon = {}
 _addon.Name = "ShissuMemberStatus"
-_addon.Version = "1.3.2.8"
-_addon.lastUpdate = "06.12.2020"
+_addon.Version = "1.3.1"
 _addon.formattedName	= stdColor .. "Shissu" .. white .. "'s MemberStatus"
 _addon.settings = {
-  charname = true,
   added = {}, 
   removed = {}, 
   memberstatus = {},
 }
 
 local _L = ShissuFramework["func"]._L(_addon.Name)
-local _P = ShissuFramework["functions"]["chat"].print
-local _C = ShissuFramework["functions"]["datatypes"].cutStringAtLetter
                                                                                                                                                                                                                               
 local _guildId = 0
 local _status = 0
 
-_addon.panel = setPanel(_L("TITLE"), _addon.formattedName, _addon.Version, _addon.lastUpdate)
+_addon.panel = setPanel(_L("TITLE"), _addon.formattedName, _addon.Version)
 _addon.controls = {}
-
-function _addon.getCharName(guildId, accName)
-  if (shissuMemberStatus["charname"] == true or nil) then
-    local memberId = GetGuildMemberIndexFromDisplayName(guildId, accName)
-    local charData = { GetGuildMemberCharacterInfo(guildId, memberId) }
-    local charName = _C(charData[2],"^")
-
-    return " (" .. charName ..")"
-  end
-
-  return ""
-end
 
 -- Event: EVENT_GUILD_MEMBER_ADDED
 function _addon.playerAdded(_, guildId, accName)
   local guildName = GetGuildName(guildId)
-  local text 
-
+  
   if shissuMemberStatus["added"][guildName] == false then return end
     if (GetGuildMemberIndexFromDisplayName(guildId, accName) ~= nil) then 
-      text = stdColor .. guildName .. ": " .. white .. accName .. _addon.getCharName(guildId, accName) .. " - " .. green .. _L("FULLYADDED")
+       text = stdColor .. guildName .. ": " .. white .. accName .. " - " .. green .. _L("FULLYADDED")
+       d(text)
   else
-    text = stdColor .. guildName .. ": " .. white .. accName .. _addon.getCharName(guildId, accName) .. " - " .. yellow .. _L("ADDED")
+       text = stdColor .. guildName .. ": " .. white .. accName .. " - " .. yellow .. _L("ADDED")
+       d(text)
   end
-
-  _P(text)
 end
 
 -- Event: EVENT_GUILD_MEMBER_REMOVED
@@ -73,18 +56,15 @@ function _addon.playerRemoved(_, guildId, accName)
   
   if shissuMemberStatus["removed"][guildName] == false then return end
 
-  local text = stdColor .. guildName .. ": " .. white .. accName .. " - " .. red .. _L("REMOVED")
-  _P(text)
+  text = stdColor .. guildName .. ": " .. white .. accName .. " - " .. red .. _L("REMOVED")
+  d(text)
 end         
 
 -- Event: EVENT_GUILD_MEMBER_PLAYER_STATUS_CHANGED
 function _addon.playerStatusChanged(_, guildId, accName, _, newStatus)
   if (_guildId == guildId and _status == newStatus) then return end
   local guildName = GetGuildName(guildId)
-  local memberId = GetGuildMemberIndexFromDisplayName(guildId, accName)
-  local charData = { GetGuildMemberCharacterInfo(guildId, memberId) }
-  local charName = charData[2]    
-
+  
   if shissuMemberStatus["memberstatus"][guildName] == false then return end
   
   _guildId = guildId
@@ -97,8 +77,9 @@ function _addon.playerStatusChanged(_, guildId, accName, _, newStatus)
     gray .. "Offline",
   }
 
-  local text = stdColor .. guildName .. ": " .. white .. accName .. _addon.getCharName(guildId, accName) .. " - " .. statusText[_status]
-  _P(text)
+  text = stdColor .. guildName .. ": " .. white .. accName .. " - " .. statusText[_status]
+
+  d(text)
 end
 
 function _addon.createSettingMenu()
@@ -108,6 +89,7 @@ function _addon.createSettingMenu()
     type = "title",
     name = "Chat " .. GetString(SI_BINDING_NAME_TOGGLE_NOTIFICATIONS),     
   }
+
   controls[#controls+1] = {
     type = "guildCheckbox",
     name = stdColor .. _L("STATUS"),
@@ -122,36 +104,22 @@ function _addon.createSettingMenu()
     type = "guildCheckbox",
     name = stdColor .. GetString(SI_GAMEPAD_WORLD_MAP_TOOLTIP_CATEGORY_PLAYERS) .. ": " .. red .. _L("REMOVED"),
     saveVar = shissuMemberStatus["removed"],
-  }    
-  
-  controls[#controls+1] = {
-    type = "title",
-    name = _L("MISC"),  
-  }
-  
-  controls[#controls+1] = {
-    type = "checkbox", 
-    name = _L("CHARNAME"),
-    getFunc = shissuMemberStatus["charname"] or true,
-    setFunc = function(_, value)
-      shissuMemberStatus["charname"] = value
-    end,
-  }        
+  }            
 end
 
-function _addon.initialized()   
+function _addon.initialized()
+  --d(_addon.formattedName .. " " .. _addon.Version)
+      
+  _addon.createSettingMenu()
+    
    -- Hat jemand die neue SaveVar schon?  
   if (shissuMemberStatus["memberstatus"] == nil) then shissuMemberStatus["memberstatus"] = {} end
   if (shissuMemberStatus["added"] == nil) then shissuMemberStatus["added"] = {} end
   if (shissuMemberStatus["removed"] == nil) then shissuMemberStatus["removed"] = {} end
-  if (shissuMemberStatus["charname"] == nil) then shissuMemberStatus["charname"] = true end
-
-  _addon.createSettingMenu()
-
+  
   for guildId=1, GetNumGuilds() do
-    local gId = GetGuildId(guildId) --Anpassung an neuen Indexzähler
-    local guildName = GetGuildName(gId)  
-
+local xguildId = GetGuildId(guildId)
+    local guildName = GetGuildName(xguildId)  
     if (shissuMemberStatus["memberstatus"][guildName] == nil) then shissuMemberStatus["memberstatus"][guildName] = false end
     if (shissuMemberStatus["added"][guildName] == nil) then shissuMemberStatus["added"][guildName] = true end
     if (shissuMemberStatus["removed"][guildName] == nil) then shissuMemberStatus["removed"][guildName] = true end
@@ -160,7 +128,8 @@ function _addon.initialized()
   EVENT_MANAGER:RegisterForEvent(_addon.Name, EVENT_GUILD_MEMBER_REMOVED, _addon.playerRemoved)
   EVENT_MANAGER:RegisterForEvent(_addon.Name, EVENT_GUILD_MEMBER_ADDED, _addon.playerAdded)
   EVENT_MANAGER:RegisterForEvent(_addon.Name, EVENT_GUILD_MEMBER_PLAYER_STATUS_CHANGED, _addon.playerStatusChanged)      
-end                                                            
+end          
+                                                                
 
 function _addon.EVENT_ADD_ON_LOADED(_, addOnName)
   if addOnName ~= _addon.Name then return end
@@ -168,10 +137,10 @@ function _addon.EVENT_ADD_ON_LOADED(_, addOnName)
   -- KOPIE / Leeren alter SGT Var
   shissuMemberStatus = shissuMemberStatus or {}
   
-  if shissuMemberStatus == {} then 
+  if shissuMemberStatus == {} then
     shissuMemberStatus = _addon.settings 
   end 
-
+  
   zo_callLater(function()               
     ShissuFramework._settings[_addon.Name] = {}
     ShissuFramework._settings[_addon.Name].panel = _addon.panel                                       

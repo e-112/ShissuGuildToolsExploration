@@ -6,9 +6,10 @@
 
 ; Author: @Shissu on EU-Server!
  
-## Title: |cAFD3FFShissu's|r|ceeeeee Notebook|r
-## APIVersion: 100033
-## Author: |cAFD3FF@Shissu|r [EU]
+## Title: |c82FA58Shissu's|r|ceeeeee Notebook|r v2.5.1
+## APIVersion: 100032 100033
+## Author: |c82FA58@Shissu|r [EU-SERVER]
+## Description: None
 ## SavedVariables: shissuNotebook
 ## DependsOn: ShissuFramework ShissuColor
 

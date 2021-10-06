@@ -1,39 +1,34 @@
 -- Shissu Guild Tools Addon
 -- ShissuWelcome
 --
--- Version: v1.2.1
--- Last Update: 12.11.2020
+-- Version: v1.2.0
+-- Last Update: 24.05.2019
 -- Written by Christian Flory (@Shissu) - esoui@flory.one
 -- Distribution without license is prohibited!
 
 local _globals = ShissuFramework["globals"]
 local stdColor = _globals["stdColor"]
 local white = _globals["white"]
-local splitToArray = ShissuFramework["functions"]["datatypes"].splitToArray
+local splitToArray = ShissuFramework["func"].splitToArray
 local setPanel = ShissuFramework["setPanel"]
 
 local _addon = {}
 _addon.Name = "ShissuWelcome"
-_addon.Version = "1.2.6"
-_addon.lastUpdate = "12.11.2020"
+_addon.Version = "1.2.0"
 _addon.formattedName = stdColor .. "Shissu" .. white .. "'s Welcome"
 _addon.controls = {}  
 _addon.settings = {
   ["invite"] = {}, -- true, true, true, true, true },
-  ["message"] = {}, -- { "Welcome %1 in %2", "Welcome %1", "Welcome %1", "Welcome %1", "Welcome %1" }
+  ["message"] = {}, -- { "Welcome %1", "Welcome %1", "Welcome %1", "Welcome %1", "Welcome %1" }
 }
 
 local _L = ShissuFramework["func"]._L(_addon.Name)
-_addon.panel = setPanel(_L("TITLE"), _addon.formattedName, _addon.Version, _addon.lastUpdate)
+_addon.panel = setPanel(_L("TITLE"), _addon.formattedName, _addon.Version)
 
 function _addon.createSettingMenu()
   local controls = ShissuFramework._settings[_addon.Name].controls
   local numGuild = GetNumGuilds()
   
-  controls[#controls+1] = {
-    type = "title",
-    name = _L("INFO"),
-  }
   controls[#controls+1] = {                
     type = "description",
     text = _L("DESC1") .. ":",
@@ -51,8 +46,8 @@ function _addon.createSettingMenu()
   }
     
   for guildId = 1, numGuild do
-    local gId = GetGuildId(guildId)
-    local name = GetGuildName(gId)
+    local xguildId = GetGuildId(guildId)
+    local name = GetGuildName(xguildId)
 
     controls[#controls+1] = {
       type = "description",
@@ -76,19 +71,20 @@ function _addon.createSettingMenu()
         shissuWelcome["message"][name] = value 
       end,
     }   
+     
   end          
 end
                                          
 -- Event: EVENT_GUILD_MEMBER_ADDED
 function _addon.guildMemberAdded(_, guildId, accName)
+--  local guildId = GetGuildId(guildId)
   local guildName = GetGuildName(guildId) 
   local allowInvite = shissuWelcome["invite"][guildName]
-        
+                        
   if allowInvite == false then return end
 
   local currentText = CHAT_SYSTEM.textEntry:GetText()
   
-  -- Nur eine Willkommensnachricht in die Textbox schreiben, wenn USER nicht aktiv selber aktuell was schreibt.
   if string.len(currentText) < 1 then
     local chatMessageArray = splitToArray(shissuWelcome["message"][guildName], "|")
           
@@ -96,17 +92,16 @@ function _addon.guildMemberAdded(_, guildId, accName)
     local chatMessage = string.gsub(chatMessageArray[rnd], "%%1", accName)
     chatMessage = string.gsub(chatMessage, "%%2", guildName)
     
-    -- Überprüfen ob der GuildID-Zähler stimmt
-    local guildID = 0
-    for gId=1, GetNumGuilds() do
-      local gId_guildId = GetGuildId(gId)
-      if(guildId == gId_guildId) then guildID = gId end
-    end
+giddy = 0
+for gi=1, GetNumGuilds() do
+ local gcheck = GetGuildId(gi)
+ if(guildId == gcheck) then giddy = gi end
+end
 
-    if (GetGuildMemberIndexFromDisplayName(guildId, accName) ~= nil) then 
-      local text = "/g" .. guildID .. " " .. chatMessage     
-      ZO_ChatWindowTextEntryEditBox:SetText(text)
-    end
+if (GetGuildMemberIndexFromDisplayName(guildId, accName) ~= nil) then 
+    local text = "/g" .. giddy .. " " .. chatMessage     
+    ZO_ChatWindowTextEntryEditBox:SetText(text)
+end
   end                        
 end
 
@@ -117,9 +112,8 @@ function _addon.initialized()
   local welcomeString = "Welcome / Willkommen %1"
   
   for guildId=1, GetNumGuilds() do
-    local gId = GetGuildId(guildId)
-    local guildName = GetGuildName(gId)  
-    
+    local xguildId = GetGuildId(guildId)
+    local guildName = GetGuildName(xguildId)  
     if (shissuWelcome["invite"][guildName] == nil) then shissuWelcome["invite"][guildName] = true end
     if (shissuWelcome["message"][guildName] == nil) then shissuWelcome["message"][guildName] = welcomeString end
   end

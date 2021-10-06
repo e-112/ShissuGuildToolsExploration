@@ -11,7 +11,7 @@ ShissuLocalization["ShissuRoster"] = {
   COLNOTE     =   "Column: Personal Notes",
 
   -- Fenster
-  TOTAL       =   "Total Gold Paid",
+  TOTAL       =   "Total",
   OFFLINE     =   "Offline",
   DAYS        =   "Days",
   RANK        =   GetString(SI_STAT_GAMEPAD_RANK_LABEL),

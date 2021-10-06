@@ -1,8 +1,8 @@
 ﻿-- Shissu Guild Tools Addon
 -- ShissuNotebookMail
 --
--- Version: v2.5.5.1
--- Last Update: 28.11.2020
+-- Version: v2.5.1
+-- Last Update: 24.05.2019
 -- Written by Christian Flory (@Shissu) - esoui@flory.one
 -- Distribution without license is prohibited!
 
@@ -35,8 +35,7 @@ end
 
 local _addon = {}
 _addon.Name	= "ShissuNotebookMail"
-_addon.Version = "2.5.5.1"
-_addon.lastUpdate = "28/11/2020"
+_addon.Version = "2.5.1"
 _addon.formattedName = stdColor .. "Shissu" .. white .. "'s Notebook"
 
 local _L = ShissuFramework["func"]._L(_addon.Name)
@@ -458,14 +457,6 @@ function _mail.mailButtons(all, kick)
   
   -- Splash Screen Text  
   SGT_Notebook_Splash_Subject:SetText(_mail.cache.title) 
-
-  SGT_Notebook_Splash_Subject:SetHandler("OnMouseEnter", function(self)
-    ZO_Tooltips_ShowTextTooltip(SGT_Notebook_Splash_Subject, TOPRIGHT, _mail.cache.text)
-  end)
-  
-  SGT_Notebook_Splash_Subject:SetHandler("OnMouseExit", function(self)
-    ZO_Tooltips_HideTextTooltip()
-  end)   
                       
   if _checkBox["kick"].value == true and kick == 1 and not kick == 3 then
     SGT_Notebook_Splash_Title:SetText("E-Mail Kick")
@@ -679,22 +670,16 @@ function _mail.buildMailList()
   _mail.dropDownGuilds:AddItem(_mail.dropDownGuilds:CreateItemEntry(yellow .. "--|r " .. white .. _L("FRIENDS"), _mail.optionSelected))
   
   if (shissuNotebook["mailList"] ~= nil) then
-    for listName, listContent in pairs(shissuNotebook["mailList"]) do
-      if listContent ~= nil then
-        _mail.dropDownGuilds:AddItem(_mail.dropDownGuilds:CreateItemEntry(stdColor .. "--|r " .. white .. listName, _mail.optionSelected))
-      end
+  for listName, listContent in pairs(shissuNotebook["mailList"]) do
+    if listContent ~= nil then
+      _mail.dropDownGuilds:AddItem(_mail.dropDownGuilds:CreateItemEntry(stdColor .. "--|r " .. white .. listName, _mail.optionSelected))
     end
+  end
   end
   
   for guildId = 1, GetNumGuilds() do
     local gId = GetGuildId(guildId)
     _mail.dropDownGuilds:AddItem(_mail.dropDownGuilds:CreateItemEntry(GetGuildName(gId), _mail.optionSelected))
-
-    if (gId == 1) then
-      _mail.dropDownGuilds:SetSelectedItem()
-      SGT_Notebook_MessagesRecipient_GuildsDropdownSelectedItemText:SetText(GetGuildName(GetGuildId(guildId)))
-      SGT_Notebook_MessagesRecipient_Choice:SetText(red .. GetGuildName(guildId))
-    end
   end
 end
 
@@ -854,6 +839,11 @@ function _addon.setDirection(control, controlText, variable)
 end
 
 function _mail.checkKick(choice)
+--  SGT_Notebook_MessagesRecipient_ButtonChoice:SetHandler("OnClicked", function() _mail.mailButtons(0, 0) end)
+--  SGT_Notebook_MessagesRecipient_ButtonAll:SetHandler("OnClicked", function() _mail.mailButtons(1, 0) end)
+ -- SGT_Notebook_MessagesRecipient_ButtonKick:SetHandler("OnClicked", function() showDialog(GetString(SI_PROMPT_TITLE_GUILD_REMOVE_MEMBER), getString(ShissuNotebookMail_confirmKick), function() _mail.mailButtons(0, 1) end, nil) end)
+--  SGT_Notebook_MessagesRecipient_ButtonAllKick:SetHandler("OnClicked", function() showDialog(GetString(SI_PROMPT_TITLE_GUILD_REMOVE_MEMBER), getString(ShissuNotebookMail_confirmKick), function() _mail.mailButtons(1, 1) end, nil) end)
+  
   if _checkBox["kick"].value then    
     showDialog(GetString(SI_PROMPT_TITLE_GUILD_REMOVE_MEMBER), _L("CONFIRM_KICK"), function() 
       _mail.mailButtons(choice, 1)
@@ -867,13 +857,14 @@ function _mail.checkKick(choice)
       _mail.mailButtons(choice, 0)
     end
   end
+
 end
 
 function _addon.mail()
   createFlatWindow(
     "SGT_Notebook_MessagesRecipient",
     SGT_Notebook_MessagesRecipient,  
-    {505, 480}, 
+    {585, 480}, 
     nil,
     _L("TITLE")
   ) 
@@ -883,13 +874,13 @@ function _addon.mail()
   _mail.indexPool = ZO_ObjectPool:New(_mail.createIndexButton, _mail.removeIndexButton)
   _mail.list = createScrollContainer("SGT_Notebook_EMailList", 200, SGT_Notebook_MessagesRecipient, SGT_Notebook_MessagesRecipient_Line6, 10, 10, -10)
   
-  _mail.button1 = createFlatButton("SGT_Notebook_NewSendListButton", SGT_Notebook_MessagesRecipient, {230, -20}, {110, 30}, white .. _L("CHOICE"), BOTTOMLEFT)   
+  _mail.button1 = createFlatButton("SGT_Notebook_NewSendListButton", SGT_Notebook_MessagesRecipient, {290, -20}, {110, 30}, white .. _L("CHOICE"), BOTTOMLEFT)   
   _mail.button2 = createFlatButton("SGT_Notebook_NewSendChoiceButton", SGT_Notebook_NewSendListButton, {130, 0}, {110, 30}, white .. _L("LIST"), TOPRIGHT)   
  
   _checkBox["aldmeri"] = _addon.createFlatCheckBox(
     "SGT_Notebook_MessagesRecipient_FactionAldmeri", 
     SGT_Notebook_MessagesRecipient_FactionLabel, 
-    {55, 0}, 
+    {80, 0}, 
     TOPRIGHT, 
     function(value) _mail.fillScrollList() end, 
     {zo_iconFormat(GetAllianceSymbolIcon(ALLIANCE_ALDMERI_DOMINION), 24, 24), 30, 25}, nil, true)
@@ -918,7 +909,7 @@ function _addon.mail()
   _checkBox["online"] = _addon.createFlatCheckBox(
     "SGT_Notebook_MessagesRecipient_StatusOnline", 
     SGT_Notebook_MessagesRecipient_StatusLabel, 
-    {71.5, 0}, 
+    {98, 0}, 
     TOPRIGHT, 
     function(value) _mail.fillScrollList() end, 
     {zo_iconFormat(GetPlayerStatusIcon(PLAYER_STATUS_ONLINE), 24, 24), 30, 25},
@@ -1005,8 +996,16 @@ function _addon.mail()
   SGT_Notebook_MessagesRecipient_Add:SetHandler("OnMouseUp", _mail.addPlayerToList)
   SGT_Notebook_MessagesRecipient_Delete:SetHandler("OnMouseUp", _mail.deletePlayerfromList)
   SGT_Notebook_MessagesRecipient_BuildGroup:SetHandler("OnMouseUp", _mail.buildGroupWithList)  
+  
+ -- SGT_Notebook_MessagesRecipient_ButtonChoice:SetHandler("OnMouseEnter", function() _addon.toolTip(self, ShissuNotebookMail_ttEMail) end)
+ -- SGT_Notebook_MessagesRecipient_ButtonAll:SetHandler("OnMouseEnter", function() _addon.toolTip(self, ShissuNotebookMail_ttEMailList) end)
 
-  SGT_MailProtocol_Ignore:SetHandler("OnMouseEnter", function() _addon.toolTip(self, _L("PROTOCOL_INFO")) end)  
+--SGT_Notebook_MessagesRecipient_EMailKickLabeChoice:SetHandler("OnMouseEnter", function() _addon.toolTip(self, ShissuNotebookMail_ttEMailKick) end)
+-- SGT_Notebook_MessagesRecipient_ButtonKick:SetHandler("OnMouseEnter", function() _addon.toolTip(self, ShissuNotebookMail_ttKick) end)
+--  SGT_Notebook_MessagesRecipient_ButtonAllKick:SetHandler("OnMouseEnter", function() _addon.toolTip(self, ShissuNotebookMail_ttKickList) end)
+ 
+  SGT_MailProtocol_Ignore:SetHandler("OnMouseEnter", function() _addon.toolTip(self, _L("PROTOCOL_INFO")) end)
+  
   SGT_Notebook_NewSendListButton:SetHandler("OnMouseUp", function() _mail.checkKick(0) end)
   SGT_Notebook_NewSendChoiceButton:SetHandler("OnMouseUp", function() _mail.checkKick(1) end)
   
@@ -1022,7 +1021,7 @@ function _addon.mail()
     _mail.dropDownRanks:AddItem(_mail.dropDownRanks:CreateItemEntry(white .. GetFinalGuildRankName(_mail.currentGuild, rankId), _mail.rankSelected))
   end  
   
-  _mail.dropDownRanks:SetSelectedItem(yellow .. "-- " .. white .. _L("ALL"))
+  _mail.dropDownRanks:SetSelectedItem(yellow .. "-- " .. white .. _L())
   
   -- DropDown Menü "Gilde" befüllen   
   SGT_Notebook_MessagesRecipient_Guilds:GetNamedChild("Dropdown"):SetWidth(200)
@@ -1032,7 +1031,16 @@ function _addon.mail()
   _mail.dropDownGuilds:SetSortsItems(false) 
   _mail.dropDownGuilds:AddItem(_mail.dropDownGuilds:CreateItemEntry(yellow .. _addon.friends, _mail.optionSelected))
 
-  -- EmpfängerListe
+  for guildId = 1, GetNumGuilds() do
+    _mail.dropDownGuilds:AddItem(_mail.dropDownGuilds:CreateItemEntry(white .. GetGuildName(GetGuildId(guildId)), _mail.optionSelected))
+  end  
+  
+  if (GetNumGuilds() > 0 ) then
+    _mail.dropDownGuilds:SetSelectedItem(GetGuildName(1))
+    SGT_Notebook_MessagesRecipient_Choice:SetText(red .. GetGuildName(1))
+  end
+
+    -- EmpfängerListe
   -- ScrollContainer + UI
   _mail.buildMailList()
 
@@ -1062,8 +1070,8 @@ function _addon.mail()
   createFlatWindow(
     "SGT_MailProtocol",
     SGT_MailProtocol,  
-    {360, 300}, 
-    false,
+    {360, 400}, 
+    function() SGT_MailProtocol:SetHidden(true) end,
     _L("PROTOCOL")
   ) 
   
@@ -1100,6 +1108,14 @@ function _addon.initialized()
     shissuNotebook["mailList"] = {}
   end
 
+  -- KOPIE / Leeren alter SGT Var
+ -- if ( shissuGT ~= nil ) then
+  --  if ( shissuGT["mailList"] ~= nil ) then
+   --   shissuNotebook["mailList"] = deepcopy(shissuGT["mailList"])
+  ----    shissuGT["mailList"] = nil
+  ---  end
+ -- end
+
   if shissuNotebook["positions"] == nil then
     shissuNotebook["positions"] = {}
   end  
@@ -1112,11 +1128,11 @@ function _addon.initialized()
     shissuNotebook["positions"]["splash"] = {}
   end
     
-  saveWindowPosition(SGT_MailProtocol, shissuNotebook["positions"]["protocol"])
-  getWindowPosition(SGT_MailProtocol, shissuNotebook["positions"]["protocol"])
+  --saveWindowPosition(SGT_MailProtocol, shissuNotebook["positions"]["protocol"])
+  --getWindowPosition(SGT_MailProtocol, shissuNotebook["positions"]["protocol"])
   
-  saveWindowPosition(SGT_Notebook_Splash, shissuNotebook["positions"]["splash"])
-  getWindowPosition(SGT_Notebook_Splash, shissuNotebook["positions"]["splash"])
+  --saveWindowPosition(SGT_Notebook_Splash, shissuNotebook["positions"]["splash"])
+  --getWindowPosition(SGT_Notebook_Splash, shissuNotebook["positions"]["splash"])
 
   zo_callLater(_addon.mail, 1000)
 end            

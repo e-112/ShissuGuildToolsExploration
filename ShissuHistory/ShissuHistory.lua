@@ -1,8 +1,8 @@
 ﻿-- Shissu Guild Tools Addon
 -- ShissuHistory
 --
--- Version: v1.5.0.19
--- Last Update: 25.11.2020
+-- Version: v1.5.0
+-- Last Update: 24.05.2019
 -- Written by Christian Flory (@Shissu) - esoui@flory.one
 -- Distribution without license is prohibited!
   
@@ -16,11 +16,13 @@ local green = _globals["green"]
 local yellow = _globals["yellow"]
 local orange = _globals["orange"]
 local whiteGold = _globals["goldSymbol"]      
+
 local setPanel = ShissuFramework["setPanel"]
-local round = ShissuFramework["functions"]["datatypes"].round
+
+local round = ShissuFramework["func"].round
 local currentTimeC = ShissuFramework["func"].currentTime
 local getKioskTime = ShissuFramework["func"].getKioskTime
-local isStringEmpty = ShissuFramework["functions"]["datatypes"].isStringEmpty
+local isStringEmpty = ShissuFramework["func"].isStringEmpty
 local checkBoxLabel = ShissuFramework["interface"].checkBoxLabel
 local createLabel = ShissuFramework["interface"].createLabel
 local createZOButton = ShissuFramework["interface"].createZOButton
@@ -29,8 +31,7 @@ local SetupGuildEvent_Orig = GUILD_HISTORY.SetupGuildEvent
                                         
 local _addon = {}
 _addon.Name	= "ShissuHistory"
-_addon.Version = "1.5.0.19"
-_addon.lastUpdate = "25.11.2020"
+_addon.Version = "1.5.0"
 _addon.formattedName = stdColor .. "Shissu" .. white .. "'s History"
  
 local _cache = {}           
@@ -38,7 +39,7 @@ local _ui = {}
 
 local _L = ShissuFramework["func"]._L(_addon.Name)
 
-_addon.panel = setPanel(_L("TITLE"), _addon.formattedName, _addon.Version, _addon.lastUpdate)
+_addon.panel = setPanel(_L("TITLE"), _addon.formattedName, _addon.Version)
 _addon.controls = {}
 
 _addon.settings = {
@@ -301,6 +302,7 @@ function _addon.filterScrollList(self)
           data.eventType == GUILD_EVENT_BANKITEM_REMOVED)) then  
         else
           table.insert(scrollData, ZO_ScrollList_CreateDataEntry(1, data))
+          --table.insert(scrollData, ZO_ScrollList_CreateDataEntry(GUILD_EVENT_DATA, data))
           filterCount = filterCount + 1  
         end         
       end
@@ -434,6 +436,43 @@ function _addon.pageFilter()
   _ui.countLabel = createLabel("SGT_HistoryCountLabel", SGT_HistoryFilterLabel, _L("CHOICE"), {150, 30}, {8, 0}, false)
   _ui.count = createZOButton("SGT_History_Count","", 150, 750, 30, ZO_GuildHistory)    
 end
+
+
+
+
+--function GUILD_HISTORY:SetupGuildEvent(control, data, ...)
+--  SetupGuildEvent_Orig(self, control, data, ...)
+--  local oldTime = control:GetNamedChild("Time"):GetText()
+
+--  local correction = GetSecondsSinceMidnight() - (GetTimeStamp() % 86400)
+--  if correction < -12*60*60 then correction = correction + 86400 end
+
+--  local timestamp = GetTimeStamp() - data.secsSinceEvent - (GetFrameTimeSeconds() - data.timeStamp)
+--  local datestring = GetDateStringFromTimestamp(timestamp)
+--  local timestring = ZO_FormatTime((timestamp + correction) % 86400, TIME_FORMAT_STYLE_CLOCK_TIME, TIME_FORMAT_PRECISION_TWENTY_FOUR_HOUR)
+
+--  control:GetNamedChild("Time"):SetText(datestring .. " " .. timestring)
+--end
+
+
+
+
+function SGTOpenAllPages()
+  EVENT_MANAGER:UnregisterForUpdate("ShissuGT_HistoryPage") 
+  
+  EVENT_MANAGER:RegisterForUpdate("ShissuGT_HistoryPage", 700, function()
+    local count = table.getn(GUILD_HISTORY.masterList)
+    RequestMoreGuildHistoryCategoryEvents()
+                             
+    zo_callLater(function()  
+      local count2 = table.getn(GUILD_HISTORY.masterList)
+    
+      if (count == count2) then
+        EVENT_MANAGER:UnregisterForUpdate("ShissuGT_HistoryPage")  
+      end
+    end, 1000)
+  end)
+end
            
 function _addon.optionControls()
   _ui.optionLabel = createLabel("SGT_HistoryOptionLabel", ZO_GuildHistoryCategories, _L("OPT"), nil, {-190, 485}, nil, nil, "ZoFontGameBold")
@@ -453,6 +492,14 @@ function _addon.optionControls()
   ZO_CheckButton_SetLabelText(_ui.optionKiosk2, white .. _L("LAST"))
   ZO_CheckButton_SetToggleFunction(_ui.optionKiosk2, function() _addon.refresh() end)      
   
+  -- Alles Öffnen
+--  _ui.optionAllPages = CreateControlFromVirtual("SGT_HistoryAllPages", SGT_HistoryOptionKiosk2, "ZO_CheckButton")
+--  _ui.optionAllPages:SetAnchor(LEFT, SGT_HistoryOptionKiosk2, LEFT, 0, 30)
+--  _ui.optionAllPages:SetHidden(false)
+
+--  ZO_CheckButton_SetLabelText(_ui.optionAllPages, white .. _L("PAGES"))
+--  ZO_CheckButton_SetToggleFunction(_ui.optionAllPages, SGTOpenAllPages)    
+  
   _ui.optionLabel:SetHidden(false)
 end           
 
@@ -467,7 +514,8 @@ function _addon.initialized()
 
   _cache.filterScrollList = GUILD_HISTORY.FilterScrollList
   GUILD_HISTORY.FilterScrollList = _addon.filterScrollList
-
+  --GUILD_HISTORY.requestCount = 100
+  
  _addon.createSettingMenu() 
  _addon.editBox()
  _addon.pageFilter()

@@ -6,9 +6,10 @@
 
 ; Author: @Shissu on EU-Server!
  
-## Title: |cAFD3FFShissu|ceeeeee's Notifications|r
-## APIVersion: 100033
-## Author: |cAFD3FF@Shissu|r [EU]
+## Title: |c82FA58Shissu|ceeeeee's Notifications|r v2.2.0
+## APIVersion: 100032 100033
+## Author: |c82FA58@Shissu|r [EU-SERVER]
+## Description: None
 ## SavedVariables: shissuNotifications
 ## DependsOn: ShissuFramework ShissuProvisionMember
 
