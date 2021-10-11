@@ -280,13 +280,6 @@ function _addon.initKioskTimer()
   _addon.kioskTimeUpdate(1000) 
 end
 
-function currentTime()
-  local correction = GetSecondsSinceMidnight() - (GetTimeStamp() % 86400)
-  if correction < -12*60*60 then correction = correction + 86400 end
-
-  return GetTimeStamp() + correction
-end
-
 -- Gildenfenster, UPDATE EVENT
 function _addon.kioskTimeUpdate(time)
   EVENT_MANAGER:UnregisterForUpdate("ShissuGT_KioskTimer")  

@@ -152,17 +152,26 @@ function _addon.processEvents(guildId, category)
   --d("LETZTER: " .. GetDateStringFromTimestamp(lastNPCSave) .. " - " .. ZO_FormatTime((lastNPCSave) % 86400, TIME_FORMAT_STYLE_CLOCK_TIME, TIME_FORMAT_PRECISION_TWENTY_FOUR_HOUR)) 
   --d("VORLETZTER: " .. GetDateStringFromTimestamp(previousKiosk) .. " - " .. ZO_FormatTime((previousKiosk) % 86400, TIME_FORMAT_STYLE_CLOCK_TIME, TIME_FORMAT_PRECISION_TWENTY_FOUR_HOUR))     
 
+  -- Important note: The kiosk reset time change detection has been disabled, because it catch our 
+  -- timezone offset correction as a change, which is incorrect.
+  -- It has bad consequences (the current week is reset and the addon is useless for the current week),
+  -- and could be implemented without them. (a simple history map of UTC time could do the trick)
+
   --If the last recalculated NPC differs from the last one saved,
   -- then "reset" the current week and move the information back.
 
-  if (shissuHistoryScanner["lastNPC"] ~= nil) then
-    if (lastNPC > shissuHistoryScanner["lastNPC"] ) then
-      shissuHistoryScanner["lastNPC"] = lastKiosk
-      _addon.copyCurrentDateToLast() 
-    end
-  else
+  -- if (shissuHistoryScanner["lastNPC"] ~= nil) then
+  --   if (lastNPC > shissuHistoryScanner["lastNPC"] ) then
+  --     shissuHistoryScanner["lastNPC"] = lastKiosk -- <== lastKiosk seems undefined in this scope...guess it should be lastNPC
+  --     _addon.copyCurrentDateToLast() 
+  --   end
+  -- else
+  --   shissuHistoryScanner["lastNPC"] = lastNPC
+  -- end   
+
+  if (shissuHistoryScanner["lastNPC"] == nil) then
     shissuHistoryScanner["lastNPC"] = lastNPC
-  end    
+  end
 
 
   if (firstEventTime > lastEventTime) then
