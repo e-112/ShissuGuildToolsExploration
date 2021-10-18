@@ -8,6 +8,7 @@ ShissuLocalization["ShissuRoster"] = {
   COLADD2     =   "After a change you have to reload the interface.",
   COLCHAR     =   "Column: Character",
   COLGOLD     =   "Column: Gold deposits",
+  COLTOTALGOLD=   "Column: Total Gold deposits",
   COLNOTE     =   "Column: Personal Notes",
 
   -- Fenster

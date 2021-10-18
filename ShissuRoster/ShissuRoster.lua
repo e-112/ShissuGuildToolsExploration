@@ -64,6 +64,7 @@ local _filter = {
 _addon.settings = {
   ["gold"] = _L("TOTAL"),
   ["colGold"] = true,
+  ["colTotalGold"] = false,
   ["colChar"] = true,
   ["colNote"] = true,
 }
@@ -99,6 +100,15 @@ function _addon.createSettingMenu()
     getFunc = shissuRoster["colGold"],
     setFunc = function(_, value)
       shissuRoster["colGold"] = value
+   --   Shissu_SuiteManager._bindings.reload()
+    end,
+  }
+    controls[#controls+1] = {
+    type = "checkbox",
+    name = _L("COLTOTALGOLD"),
+    getFunc = shissuRoster["colTotalGold"],
+    setFunc = function(_, value)
+      shissuRoster["colTotalGold"] = value
    --   Shissu_SuiteManager._bindings.reload()
     end,
   } 
@@ -738,6 +748,7 @@ end
 function _addon:InitRosterChanges()   
   GUILD_ROSTER_ENTRY_SORT_KEYS["character"] = { tiebreaker = 'displayName' }
   GUILD_ROSTER_ENTRY_SORT_KEYS["goldDeposit"] = { tiebreaker = 'displayName' }
+  GUILD_ROSTER_ENTRY_SORT_KEYS["totalGoldDeposit"] = { tiebreaker = 'displayName' }
 
   local additionalWidth = 0
 
@@ -759,8 +770,9 @@ function _addon:InitRosterChanges()
   
   local headers = ZO_GuildRosterHeaders
   local zoneHeader = headers:GetNamedChild('Zone')
+  local goldDepositHeader = nil
   
-  if (shissuRoster["colGold"] or shissuRoster["colChar"] ) then                                 
+  if (shissuRoster["colGold"] or shissuRoster["colTotalGold"] or shissuRoster["colChar"]) then                                 
     
     local headerDisplayName = headers:GetNamedChild('DisplayName') 
     zoneHeader:SetDimensions(220, 32)
@@ -786,14 +798,10 @@ function _addon:InitRosterChanges()
 
     -- Spalte Einzahlungen
     if shissuRoster["colGold"] then  
-      additionalWidth = additionalWidth + 10
-      
-      if shissuRoster["colChar"] then
-        additionalWidth = additionalWidth + 80
-      end
+      additionalWidth = additionalWidth + 100
       
       controlName = headers:GetName() .. _L("DEPOSIT")
-      local goldDepositHeader = CreateControlFromVirtual(controlName, headers, 'ZO_SortHeader')
+      goldDepositHeader = CreateControlFromVirtual(controlName, headers, 'ZO_SortHeader')
       ZO_SortHeader_Initialize(goldDepositHeader, _L("DEPOSIT") .. " ", 'goldDeposit', ZO_SORT_ORDER_DOWN, TEXT_ALIGN_CENTER, 'ZoFontGameLargeBold')     
 
       goldDepositHeader:SetAnchor(TOPLEFT, zoneHeader, TOPRIGHT, 0, 0)
@@ -808,6 +816,26 @@ function _addon:InitRosterChanges()
       controlName:SetAnchor(TOPLEFT, goldDepositHeader, TOPRIGHT, 0, 0)
     end
     
+    if shissuRoster["colTotalGold"] then  
+      additionalWidth = additionalWidth + 100
+      
+      controlName = headers:GetName() .. _L("DEPOSIT3")
+      local totalGoldDepositHeader = CreateControlFromVirtual(controlName, headers, 'ZO_SortHeader')
+      ZO_SortHeader_Initialize(totalGoldDepositHeader, _L("DEPOSIT3") .. " ", 'totalGoldDeposit', ZO_SORT_ORDER_DOWN, TEXT_ALIGN_CENTER, 'ZoFontGameLargeBold')     
+
+      local anchor = goldDepositHeader or zoneHeader
+
+      totalGoldDepositHeader:SetAnchor(TOPLEFT, anchor, TOPRIGHT, 0, 0)
+      totalGoldDepositHeader:SetDimensions(120, 32)
+      totalGoldDepositHeader:SetHidden(false)  
+      
+      GUILD_ROSTER_KEYBOARD.sortHeaderGroup:AddHeader(totalGoldDepositHeader)
+    
+      controlName = headers:GetNamedChild('Class')
+      controlName:ClearAnchors()
+      controlName:SetAnchor(TOPLEFT, totalGoldDepositHeader, TOPRIGHT, 0, 0)
+    end
+
     local origWidth = ZO_GuildRoster:GetWidth()
     ZO_GuildRoster:SetWidth(origWidth + additionalWidth)   
   else
@@ -859,6 +887,38 @@ function GUILD_ROSTER_MANAGER:SetupEntry(control, data, selected)
     end  
   end
 
+  if shissuRoster["colTotalGold"] then
+    local rightAnchor = rowZone
+
+    if shissuRoster["colGold"] then
+        rightAnchor = control:GetNamedChild(_L("DEPOSIT"))
+    end
+
+    local totalGoldDeposit = control:GetNamedChild(_L("DEPOSIT3"))
+
+    if(not totalGoldDeposit) then
+      controlName = control:GetName() .. _L("DEPOSIT3")
+      totalGoldDeposit = control:CreateControl(controlName, CT_LABEL)
+      totalGoldDeposit:SetAnchor(LEFT, rightAnchor, RIGHT, 10, 0)
+      totalGoldDeposit:SetFont('ZoFontGame')
+      totalGoldDeposit:SetWidth(105)
+      totalGoldDeposit:SetHidden(false)    
+      totalGoldDeposit:SetHorizontalAlignment(TEXT_ALIGN_RIGHT)    
+    end  
+       
+    totalGoldDeposit:SetText(ZO_LocalizeDecimalNumber(data.totalGoldDeposit or 0) .. " |t16:16:/esoui/art/guild/guild_tradinghouseaccess.dds|t")
+
+    class:ClearAnchors() 
+    class:SetAnchor(TOPLEFT, totalGoldDeposit, TOPRIGHT, 8)   
+  else
+    local totalGoldDeposit = control:GetNamedChild(_L("DEPOSIT3"))
+    if (totalGoldDeposit) then
+      totalGoldDeposit:SetHidden(true)
+      class:ClearAnchors() 
+      class:SetAnchor(TOPLEFT, rowZone, TOPRIGHT, 8)   
+    end
+  end
+
   if (shissuRoster["colChar"]) then
     local character = control:GetNamedChild(_L("CHAR"))
     if(not character) then
@@ -901,7 +961,7 @@ function GUILD_ROSTER_MANAGER:SetupEntry(control, data, selected)
     end
   end
   
-  if shissuRoster["colGold"] or shissuRoster["colChar"] then
+  if shissuRoster["colGold"] or shissuRoster["colTotalGold"] or shissuRoster["colChar"] then
     rowZone:SetWidth(210)
   else
     rowZone:SetWidth(320)
@@ -1062,6 +1122,12 @@ function SGT_GuildRosterManager:BuildMasterList()
       data.goldDeposit = goldDeposit
       data.goldDepositTT = goldTooltip
     end
+
+    if shissuRoster["colTotalGold"] then
+      local historyData = _addon.getHistoryData(guildName, displayName, GUILD_EVENT_BANKGOLD_ADDED)
+
+      data.totalGoldDeposit =  historyData[4]
+    end
     
     -- Spalte: Persönliche Notizen  
     if (shissuRoster["colNote"]) then  
@@ -1132,6 +1198,7 @@ function _addon.initialized()
   end
   
   if (shissuRoster["colGold"] == nil) then shissuRoster["colGold"] = true end
+  if (shissuRoster["colTotalGold"] == nil) then shissuRoster["colTotalGold"] = false end
   if (shissuRoster["colChar"] == nil) then shissuRoster["colChar"] = true end
   if (shissuRoster["colNote"] == nil) then shissuRoster["colNote"] = true end
 

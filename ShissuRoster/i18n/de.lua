@@ -8,6 +8,7 @@ ShissuLocalization["ShissuRoster"] = {
   COLADD2     =   "Nach einer Änderung müssen Sie das Interface neulanden.",
   COLCHAR     =   "Spalte: Charakter",
   COLGOLD     =   "Spalte: Gold Einzahlungen",
+  COLTOTALGOLD=   "Spalte: Gesamt Gold Einzahlungen",
   COLNOTE     =   "Spalte: Persönliche Notizen",
 
   -- Fenster
